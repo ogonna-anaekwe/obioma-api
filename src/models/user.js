@@ -3,23 +3,14 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const Task = require('./task')
-const sharp = require('sharp')
+const Collection = require('./collection')
 
 const userSchema = new mongoose.Schema({
-    name: {
+    name: { // represents the company's name
         type: String,
         required: true,
-        trim: true
-    },
-    age: {
-        type: Number,
-        default: 0,
-        validate(value) {
-            if (value < 0) {
-                throw new Error('Age must be a positive number')
-            }
-        }
+        trim: true, 
+        lowercase: true
     },
     email: {
         type: String,
@@ -27,9 +18,12 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true,
         lowercase: true,
+        default: "sanks.bs@gmail.com",
         validate(value) {
             if (!validator.isEmail(value)) {
                 throw new Error('Email is invalid')
+            } else if (value !== "sanks.bs@gmail.com") {
+                throw new Error('Contact admin')
             }
         }
     },
@@ -49,17 +43,24 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     }],
+    phone_number: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+        default: "+2348173028603"
+    },
     avatar: {
         type: Buffer
     }
-})
+}, { timestamps: true })
 
-// shows link between users and tasks
+// shows link between users and collections
 // it is not actually stored in the database hence the virtual
-userSchema.virtual('tasks', {
-    ref: 'Task',
-    localField: '_id',
-    foreignField: 'owner'
+userSchema.virtual('collections', {
+    ref: 'Collection', // this is the model that you seek to tie the User model to
+    localField: '_id', // this is the ID that you seek to tie to
+    foreignField: 'owner' // this is what you're calling the field from the User schema that you want to tie to the Collection model
 })
 
 // this method hides the token and password when the user object is returned
@@ -69,7 +70,6 @@ userSchema.methods.toJSON = function () {
 
     delete userObject.password
     delete userObject.tokens
-    delete userObject.avatar
 
     return userObject
 }
@@ -112,10 +112,10 @@ userSchema.pre('save', async function (next) {
     next()
 })
 
-// delete user tasks when user is deleted
+// delete user collections when user is deleted
 userSchema.pre('remove', async function (next) {
     const user = this
-    await Task.deleteMany({ owner: user._id })
+    await Collection.deleteMany({ owner: user._id })
     next()
 })
 
