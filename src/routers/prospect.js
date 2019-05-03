@@ -1,8 +1,13 @@
 const express = require('express')
 const Prospect = require('../models/prospect')
 const router = new express.Router()
-const sg = require('sendgrid')(process.env.SENDGRID_APIKEY);
-// we don't need auth for any endpoint in this router
+// required for email
+const sg = require('sendgrid')(process.env.SENDGRID_APIKEY)
+// required for text messaging
+const twilio = require('twilio')
+const accountSid = process.env.TWILIO_SID
+const authToken = process.env.TWILIO_TOKEN
+const client = twilio(accountSid, authToken)
 
 // create new prospect endpoint w/ async await
 router.post('/prospects', async (req, res) => {
@@ -40,9 +45,21 @@ router.post('/prospects', async (req, res) => {
           ]
         }
       });
+      const textMessageBody = req.body.customerName + ' just completed your contact form and can be reached on ' + req.body.customerPhone + ' or ' + req.body.customerEmail
     try {
+        // console.log(textMessageBody)
         await prospect.save()
         res.status(201).send(prospect)
+        // text message logic
+        client.messages.create({
+     body: textMessageBody,
+     from: '+16475573003',
+     to: '+15145694877'
+   })
+  .then(message => {
+    console.log('user info successfully texted to SANKS: ', message)
+  }).catch(e => console.log(e));
+  // email logic
         sg.API(request)
   .then(function (response) {
     console.log(response.statusCode);

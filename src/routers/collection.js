@@ -3,7 +3,7 @@ const Collection = require('../models/collection')
 const router = new express.Router()
 const auth = require('../middleware/auth')
 const multer = require('multer')
-// const sharp = require('sharp')
+const sharp = require('sharp')
 
 const upload = multer({
     // dest: 'avatar',
@@ -19,7 +19,7 @@ const upload = multer({
     }
 })
 // create new collection endpoint w/ async await
-router.post('/collections', auth, upload.single('userPost'), async (req, res) => {
+router.post('/collections', auth, upload.single('collectionImage'), async (req, res) => {
     // const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250 }).png().toBuffer()
     // console.log(buffer)
     // console.log(req.body)
@@ -29,6 +29,7 @@ router.post('/collections', auth, upload.single('userPost'), async (req, res) =>
         ...req.body,
         owner: req.user._id // this value comes from the user const defined in the auth middleware
     })
+    // req.collection.image = buffer
     // console.log(req.body)
     // console.log(req.image)
     try {
@@ -37,6 +38,7 @@ router.post('/collections', auth, upload.single('userPost'), async (req, res) =>
         //console.log(req.body)
     } catch (e) {
         res.status(400).send(e)
+        console.log(e)
     }
 })
 
@@ -132,6 +134,7 @@ router.get('/collections/:id', async (req, res) => {
 
 // update specific collection endpoint w/ async await
 router.patch('/collections/:id', auth, async (req, res) => {
+    // const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250 }).png().toBuffer()
     const updates = Object.keys(req.body)
     const allowedUpdates = ['name', 'price', 'category', 'description', 'image', 'colour', 'availability', 'location']
     const isValidOperation = updates.every((update) => {
@@ -159,13 +162,33 @@ router.patch('/collections/:id', auth, async (req, res) => {
         updates.forEach((update) => {
             collection[update] = req.body[update]
         })
-
+        // console.log(buffer)
+        // console.log(req)
         await collection.save()
         res.send(collection)
 
     } catch (e) {
         res.status(500).send()
+        console.log(e)
     }
+})
+
+// add picture to each collection based on id
+// collectionImage is the key of the req in postman
+router.post('/collections/:id', auth, upload.single('collectionImage'), async (req, res) => {
+    // const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250 }).png().toBuffer()
+    const buffer = await sharp(req.file.buffer).png().toBuffer()
+    // get ID of collection to be updated
+    const _id = req.params.id
+    // find full data corresponding to the collection based on supplied ID
+    const collection = await Collection.findOne({_id, owner: req.user._id })
+
+    // add image to the collection
+    collection.image = buffer
+    
+    // save updated collection with image
+    await collection.save()
+    res.send()
 })
 
 // delete specific collection
