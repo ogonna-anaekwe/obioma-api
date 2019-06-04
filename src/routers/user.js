@@ -30,7 +30,7 @@ router.post('/users', async (req, res) => {
         res.status(201).send({user: user, token: token})
     } catch (e) {
         res.status(400).send(e)
-        console.log(e)
+        console.log(e.message)
     }
 })
 
