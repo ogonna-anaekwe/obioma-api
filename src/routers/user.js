@@ -21,6 +21,7 @@ const upload = multer({
 
 // create new user endpoint w/ async await. this represents sign up
 router.post('/users', async (req, res) => {
+    console.log(process.env.MONGODB_URL)
     console.log(req.body)
     const user = new User(req.body)
     
