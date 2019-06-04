@@ -1,5 +1,5 @@
 // note here collection refers to the gallery created by the client
-// collection here is used differently from a database name as defined in by mongodb
+// collection here is used differently from a database name as defined in mongodb
 // this file defines the collection model
 const mongoose = require('mongoose')
 
@@ -18,13 +18,13 @@ const collectionSchema = new mongoose.Schema(
         },
         category: {
             type: String,
-            // required: true,
+            required: true,
             trim: true,
             lowercase: true
         },
         description: {
             type: String,
-            // required: true,
+            required: true,
             trim: true,
             lowercase: true
         },
@@ -33,27 +33,35 @@ const collectionSchema = new mongoose.Schema(
         },
         favorite: {
             type: String,
-            // required: true,
             trim: true,
             lowercase: true
         },
         colour: {
             type: String,
-            // required: true,
+            required: true,
             trim: true,
             lowercase: true
         },
         availability: {
             type: String,
-            // required: true,
+            required: true,
             trim: true,
             lowercase: true
         },
         location: {
             type: String,
-            // required: true,
             trim: true,
             lowercase: true
+        },
+        phone_number: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        email: {
+            type: String,
+            required: true,
+            trim: true
         },
         // no longer necessary since we can leverage mongoose's inbuilt timestamp function
         // dateAdded: {
