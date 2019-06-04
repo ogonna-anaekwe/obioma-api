@@ -4,6 +4,7 @@ require('./db/mongoose')
 const userRouter = require('./routers/user')
 const collectionRouter = require('./routers/collection')
 const prospectRouter = require('./routers/prospect')
+const versionAlive = require('./routers/versionAlive')
 
 const app = express() // will be used to create routes and start listening port
 const port = process.env.PORT // prod vs local port for server
@@ -14,6 +15,7 @@ app.use(express.json())
 app.use(userRouter)
 app.use(collectionRouter)
 app.use(prospectRouter)
+app.use(versionAlive)
 
 
 app.listen(port, () => {
