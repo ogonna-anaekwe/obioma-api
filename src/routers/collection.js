@@ -5,13 +5,19 @@ const auth = require('../middleware/auth')
 const multer = require('multer')
 const sharp = require('sharp')
 const path = require('path')
+const fs = require('fs')
+
+
+try {
+    fs.mkdirSync(path.join(__dirname, '../uploads/'))
+  } catch (err) {
+    if (err.code !== 'EEXIST') throw err
+  }
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         // without the path.join, multer/express will not know that the uploads folder exists
       cb(null, path.join(__dirname,'../uploads/'))
-    //   console.log(path.join(__dirname, '../uploads/'))
-    // cb(null, 'src/uploads/')
     },
     filename: function(req, file, cb) {
       console.log(file)
