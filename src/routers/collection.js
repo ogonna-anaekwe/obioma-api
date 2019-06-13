@@ -4,20 +4,21 @@ const router = new express.Router()
 const auth = require('../middleware/auth')
 const multer = require('multer')
 const sharp = require('sharp')
+const path = require('path')
 
-const upload = multer({
-    limits: {
-        fileSize: 1000000 // bytes
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        // without the path.join, multer/express will not know that the uploads folder exists
+      cb(null, path.join(__dirname,'../uploads/'))
     },
-    fileFilter(req, file, cb) {
-        if (!file.originalname.match(/\.(jpeg|jpg|png)$/)) {
-            return cb(new Error('Please upload a JPEG or PNG file'))
-        } 
-        cb(undefined, true)
+    filename: function(req, file, cb) {
+      console.log(file)
+      cb(null, file.originalname)
     }
-})
+  })
+
 // create new collection endpoint w/ async await
-router.post('/collections', auth, upload.single('collectionImage'), async (req, res) => {
+router.post('/collections', auth, async (req, res) => {
     const collection = new Collection({
         // add owner to body
         ...req.body,
@@ -96,24 +97,6 @@ router.patch('/collections/:id', auth, async (req, res) => {
     }
 })
 
-// add picture to each collection based on id
-// collectionImage is the key of the req in postman
-router.post('/collections/:id', auth, upload.single('collectionImage'), async (req, res) => {
-    // const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250 }).png().toBuffer()
-    const buffer = await sharp(req.file.buffer).png().toBuffer()
-    // get ID of collection to be updated
-    const _id = req.params.id
-    // find full data corresponding to the collection based on supplied ID
-    const collection = await Collection.findOne({_id, owner: req.user._id })
-
-    // add image to the collection
-    collection.image = buffer
-    
-    // save updated collection with image
-    await collection.save()
-    res.send()
-})
-
 // delete specific collection
 router.delete('/collections/:id', auth, async (req, res) => {
     const _id = req.params.id
@@ -130,5 +113,52 @@ router.delete('/collections/:id', auth, async (req, res) => {
         res.status(500).send()
     }
 })
+
+router.post('/collections/:id', auth, async (req, res, next) => {
+    const _id = req.params.id
+    console.log(_id)
+    const collection = await Collection.findOne({_id, owner: req.user._id })
+    console.log(collection)
+    const upload = multer({ storage }).single('image')
+    upload(req, res, function(err) {
+      if (err) {
+        return res.send(err)
+      }
+      console.log('file uploaded to server')
+      console.log(req.file)
+  
+      // SEND FILE TO CLOUDINARY
+      const cloudinary = require('cloudinary').v2
+      cloudinary.config({
+        cloud_name: process.env.CLOUD_NAME,
+        api_key: process.env.API_KEY,
+        api_secret: process.env.API_SECRET
+      })
+      
+      const path = req.file.path
+      const uniqueFilename = new Date().toISOString()
+  
+      cloudinary.uploader.upload(
+        path,
+        { public_id: `blog/${uniqueFilename}`, tags: `blog` }, // directory and tags are optional
+        function(err, image) {
+          if (err) return res.send(err)
+          console.log('file uploaded to Cloudinary')
+          console.log(image)
+          // remove file from server
+          const fs = require('fs')
+          fs.unlinkSync(path)
+          // return image details
+          res.json(image.secure_url)
+          console.log(image.secure_url)
+          collection.image = image.secure_url
+          collection.save()
+          res.status(201).send()
+        }
+      )
+    })
+    // await collection.save()
+    // res.send()
+  })
 
 module.exports = router

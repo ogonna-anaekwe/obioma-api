@@ -29,7 +29,7 @@ const collectionSchema = new mongoose.Schema(
             lowercase: true
         },
         image: {
-            type: Buffer
+            type: String
         },
         favorite: {
             type: String,

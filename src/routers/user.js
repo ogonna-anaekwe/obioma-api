@@ -6,7 +6,6 @@ const multer = require('multer')
 const sharp = require('sharp')
 
 const upload = multer({
-    // dest: 'avatar',
     limits: {
         fileSize: 1000000 // bytes
     },
@@ -15,14 +14,13 @@ const upload = multer({
             return cb(new Error('Please upload a JPEG or PNG file'))
         } 
         cb(undefined, true)
-        // cb(undefined, false)
     }
 })
 
 // create new user endpoint w/ async await. this represents sign up
 router.post('/users', async (req, res) => {
-    console.log(process.env.MONGODB_URL)
-    console.log(req.body)
+    // console.log(process.env.MONGODB_URL)
+    // console.log(req.body)
     const user = new User(req.body)
     
     try {
