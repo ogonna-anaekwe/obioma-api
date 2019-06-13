@@ -148,7 +148,7 @@ router.post('/collections/:id', auth, async (req, res, next) => {
           console.log(image)
           // remove file from server
           const fs = require('fs')
-        //   fs.unlinkSync(path)
+          fs.unlinkSync(path)
           // return image details
           res.json(image.secure_url)
           console.log(image.secure_url)
