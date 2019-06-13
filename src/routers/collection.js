@@ -115,10 +115,11 @@ router.delete('/collections/:id', auth, async (req, res) => {
 })
 
 router.post('/collections/:id', auth, async (req, res, next) => {
+    try {
     const _id = req.params.id
-    console.log(_id)
+    // console.log(_id)
     const collection = await Collection.findOne({_id, owner: req.user._id })
-    console.log(collection)
+    // console.log(collection)
     const upload = multer({ storage }).single('image')
     upload(req, res, function(err) {
       if (err) {
@@ -156,7 +157,9 @@ router.post('/collections/:id', auth, async (req, res, next) => {
           res.status(201).send()
         }
       )
-    })
+    })} catch (e) {
+        console.log(e)
+    }
     // await collection.save()
     // res.send()
   })
