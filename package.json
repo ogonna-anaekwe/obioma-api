@@ -18,6 +18,7 @@
     "datauri": "^2.0.0",
     "dotenv": "^8.0.0",
     "express": "^4.16.4",
+    "fs": "0.0.1-security",
     "jsonwebtoken": "^8.4.0",
     "mongodb": "^3.1.10",
     "mongoose": "^5.3.16",
