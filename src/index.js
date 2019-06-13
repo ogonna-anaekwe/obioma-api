@@ -14,6 +14,7 @@ const port = process.env.PORT // prod vs local port for server
 const multer = require('multer')
 
 app.use(cors())
+app.use(express.static(__dirname + '/public'));
 // app.options('*', cors())
 app.use(express.json())
 app.use(userRouter)
