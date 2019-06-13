@@ -9,7 +9,7 @@ const path = require('path')
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         // without the path.join, multer/express will not know that the uploads folder exists
-      cb(null, path.join(__dirname,'../uploads/'))
+      cb(null, fs.mkdirSync(path.join(__dirname,'../uploads/')))
     },
     filename: function(req, file, cb) {
       console.log(file)
